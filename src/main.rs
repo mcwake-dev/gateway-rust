@@ -3,10 +3,7 @@ extern crate rocket;
 extern crate dotenv_codegen;
 
 use rocket::http::Status;
-use rocket::{
-    serde::{json::Json, Deserialize},
-    Response,
-};
+use rocket::serde::{json::Json, Deserialize};
 
 mod mail;
 mod utils;
@@ -44,7 +41,10 @@ fn request_otp(email: Json<Email<'_>>) -> Status {
 
     match mail::send_email(mail_data) {
         Ok(_) => Status::Accepted,
-        Err(e) => Status::InternalServerError,
+        Err(e) => {
+            println!("Error: {:?}", e);
+            return Status::InternalServerError;
+        }
     }
 }
 
