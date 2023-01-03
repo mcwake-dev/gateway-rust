@@ -1,7 +1,6 @@
 use dotenv::dotenv;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
-use std::env;
 
 pub struct MailData {
     pub from_address: String,
@@ -11,7 +10,9 @@ pub struct MailData {
     pub text: String,
 }
 
-pub fn send_email(mail_data: MailData) {
+pub fn send_email(
+    mail_data: MailData,
+) -> Result<lettre::transport::smtp::response::Response, lettre::transport::smtp::Error> {
     dotenv().ok();
     let email = Message::builder()
         .from(mail_data.from_address.parse().unwrap())
@@ -26,8 +27,5 @@ pub fn send_email(mail_data: MailData) {
         .credentials(credentials)
         .build();
 
-    match mailer.send(&email) {
-        Ok(_) => println!("Email sent successfully"),
-        Err(e) => panic!("Could not send email {:?}", e),
-    }
+    return mailer.send(&email);
 }

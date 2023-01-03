@@ -2,7 +2,11 @@
 extern crate rocket;
 extern crate dotenv_codegen;
 
-use rocket::serde::{json::Json, Deserialize};
+use rocket::http::Status;
+use rocket::{
+    serde::{json::Json, Deserialize},
+    Response,
+};
 
 mod mail;
 mod utils;
@@ -19,7 +23,7 @@ struct Email<'r> {
 }
 
 #[post("/request-otp", format = "application/json", data = "<email>")]
-fn request_otp(email: Json<Email<'_>>) {
+fn request_otp(email: Json<Email<'_>>) -> Status {
     let length: usize = 6;
     let otp: &str = &utils::random_string(length);
     let mut text: String = "Your One-Time Password is ".to_owned();
@@ -38,7 +42,10 @@ fn request_otp(email: Json<Email<'_>>) {
         html,
     };
 
-    mail::send_email(mail_data);
+    match mail::send_email(mail_data) {
+        Ok(_) => Status::Accepted,
+        Err(e) => Status::InternalServerError,
+    }
 }
 
 #[launch]
